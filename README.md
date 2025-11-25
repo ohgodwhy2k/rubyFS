@@ -1,108 +1,62 @@
-# QuickExtension
+# Meet RubyFS
 
-This template is designed for **developers** and **Scratch/TurboWarp enthusiasts** who want to quickly create and manage a new **TurboWarp extension**.
+## Overview
 
-It provides a modern development environment with **linting, code formatting, bundling, and testing** out of the box, allowing you to focus purely on your extension's logic.
+RubyFS (originally LiFS/Lithium FS) is a powerful **in-memory file system extension** designed for use in Scratch and Turbowarp projects. It provides a familiar, structured file system environment, allowing projects to create, read, write, list, and manage files and directories using standard path-based operations (e.g., `/folder/file.txt`).
 
-# How to Use This Template
+This extension is ideal for creating complex projects like text-based adventures, persistent local data managers, or even operating system simulations within a Scratch environment.
 
-1. Click **"Use this template"**.
-2. Click **"Create a new repository"**.
-3. Name your repository and add a description.
-4. Choose visibility (public/private).
-5. Click **"Create repository"**.
-6. Read the rest of the README & documentation.
-7. **You're ready to start developing your extension!**
+## Key Features
 
-# Features
+* **Hierarchical Structure:** Supports nested directories (e.g., `/usr/bin/`).
+* **Core File Operations:** Blocks for `create`, `delete`, `open` (read), and `set` (write).
+* **Path Utilities:** Blocks for `exists?`, `is file?`, `is directory?`, `file name`, and `directory of`.
+* **Management & Metadata:**
+* **Permissions:** Granular control over `read`, `write`, `delete`, `create`, `see`, and `control` permissions.
+* **Size Limits:** Set size restrictions on directories in bytes to prevent runaway data growth.
+* **Timestamps:** Access `date created`, `date modified`, and `date accessed` for any entry.
+* **Import/Export:** Full file system data can be easily converted to a **JSON string** for saving, sharing, or loading persistent data.
 
-1. ✔ Automated builds using **Rollup**
-2. ✔ **ESLint** + **Prettier** integration
-3. ✔ **Node test runner** (built-in)
-4. ✔ **GitHub Actions** (build, lint, test, release)
-5. ✔ Simple and clean extension entry point
+## Blocks Reference
 
-# Project Structure
+Here is a summary of the main blocks provided by RubyFS:
 
-```
-/
-├─ src/
-│  └─ main.js
-├─ tests/
-│  └─ getInfo.test.js
-├─ docs/
-│  └─ ...
-├─ .github/workflows/
-│  └─ ...
-├─ rollup.config.js
-├─ package.json
-└─ README.md
-```
+### File and Directory Manipulation
+
+| Block | Type | Description |
+| :--- | :--- | :--- |
+| `create [path]` | Command | Creates a new file or directory at `path`. Directories must end with a `/`. Recursively creates parent directories. |
+| `set [path] to [content]` | Command | Writes `content` to the file at `path`. If the file does not exist, it is created. |
+| `open [path]` | Reporter | Returns the content of the file at `path`, or an empty string if not found or if it's a directory. |
+| `delete [path]` | Command | Deletes the file or directory at `path`. Deleting a directory is **recursive** (deletes all children). |
+| `rename [path1] to [path2]` | Command | Moves or renames a file or directory. |
+| `copy [path1] to [path2]` | Command | Recursively copies a file or directory. |
+| `list [type] under [path]` | Reporter | Returns a list of files, directories, or all entries in the given path. |
 
 ---
 
-# Node Scripts (`npm`)
+### Status and Utility
 
-Use these commands to manage and prepare your extension for use.
+| Block | Type | Description |
+| :--- | :--- | :--- |
+| `does [path] exist?` | Boolean | Checks if a file or directory exists. |
+| `is [path] a file?` | Boolean | Checks if the entry at `path` is a file. |
+| `is [path] a directory?` | Boolean | Checks if the entry at `path` is a directory. |
+| `file name of [path]` | Reporter | Returns the name of the file/directory (e.g., `/test/foo.txt` -> `foo.txt`). |
+| `directory of [path]` | Reporter | Returns the parent directory (e.g., `/test/foo.txt` -> `/test/`). |
+| `last error` | Reporter | Returns the message of the last failed operation. |
+| `was written?` | Boolean | Reports if a file was written to since the last check, then resets. |
+| `was read?` | Boolean | Reports if a file was read from since the last check, then resets. |
 
-| Command            | Description                                                                               |
-| ------------------ | ----------------------------------------------------------------------------------------- |
-| `npm run build`    | Bundles your source code into the final optimized extension file using **Rollup**.        |
-| `npm run watch`    | Starts Rollup in **watch mode** — automatically rebuilds when files change.               |
-| `npm run format`   | Formats all code files using **Prettier** for consistent style.                           |
-| `npm run lint`     | Runs **ESLint** to check for errors and style issues.                                     |
-| `npm run lint:fix` | Runs ESLint and automatically fixes applicable issues.                                    |
-| `npm run test`     | Executes the test suite using Node’s built-in test runner (runs `tests/getInfo.test.js`). |
+---
 
-# Dependencies
+### System Management
 
-These packages provide the tooling necessary to build, format, and maintain your extension:
-
-- **Rollup**:
-  `rollup`, `@rollup/plugin-commonjs`, `@rollup/plugin-node-resolve`
-  _(Module bundling and plugin support)_
-
-- **ESLint**:
-  `eslint`, `@eslint/js`, `eslint-plugin-jsdoc`, `globals`
-  _(Code quality and error checking)_
-
-- **Prettier**:
-  `prettier`, `eslint-config-prettier`
-  _(Code formatting and style consistency)_
-
-# Keeping Up to Date
-
-If you created your repository from this template and want to pull in future updates or fixes, you can add the template repo as an additional remote and cherry-pick commits as needed.
-
-## 1. Add the Template as a New Remote
-
-```bash
-git remote add upstream https://github.com/ohgodwhy2k/quickextension.git
-git fetch upstream
-```
-
-## 2. Pulling and Cherry-Picking Changes
-
-### View upstream commits:
-
-```bash
-git log upstream/main
-```
-
-(Look for the commit hash you want to integrate.)
-
-### Cherry-pick a specific commit:
-
-```bash
-git cherry-pick <commit-hash>
-```
-
-Replace `<commit-hash>` with the actual commit ID.
-
-### Merge all upstream changes (⚠ may cause conflicts):
-
-```bash
-git pull upstream main
-```
-
-> **TODO (Future Idea):** Add an automated npm script to fetch/pull upstream changes.
+| Block | Type | Description |
+| :--- | :--- | :--- |
+| `clear the file system` | Command | Resets the entire file system to a single root `/`. |
+| `export file system` | Reporter | Returns the entire file system data as a JSON string. |
+| `import file system from [data]` | Command | Overwrites the current file system with the data from the JSON string. |
+| `set size limit for [dir] to [bytes]` | Command | Sets a maximum content size for the directory and its children. |
+| `size limit of [dir] (bytes)` | Reporter | Returns the size limit (`-1` if unlimited). |
+| `current size of [dir] (bytes)` | Reporter | Returns the total size of all file content within the directory tree. |
