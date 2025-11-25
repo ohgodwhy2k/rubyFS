@@ -2,7 +2,8 @@
 
 ## Supported Versions
 
-Unfortunately, only the latest release is getting security updates. This is because QuickExtension lacks a versioning system, nor does it need one.
+- [X] RubyFS, version 1.0.5
+- [ ] All Lithium FS versions or older
 
 ## Reporting a Vulnerability
 
