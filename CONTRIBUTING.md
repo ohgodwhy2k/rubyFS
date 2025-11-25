@@ -1,6 +1,4 @@
-# Contributing to QuickExtension
-
-> If you've forked/used this as a template, change this to the contributing policy that you want.
+# Contributing to RubyFS
 
 ## Branch naming
 
