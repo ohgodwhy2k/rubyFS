@@ -1,0 +1,25 @@
+{
+  "name": "my-turbowarp-extension",
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "build": "rollup -c",
+    "watch": "rollup -c -w",
+    "format": "npx prettier --write .",
+    "lint": "npx eslint .",
+    "lint:fix": "npx eslint --fix .",
+    "test": "node tests/getInfo.test.js",
+    "start": "node ./scripts/server.js",
+    "release": "npm run build && node ./scripts/release.js"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.39.1",
+    "@rollup/plugin-commonjs": "^29.0.0",
+    "@rollup/plugin-node-resolve": "^16.0.3",
+    "eslint": "^9.39.1",
+    "eslint-config-prettier": "^10.1.8",
+    "eslint-plugin-jsdoc": "^61.4.1",
+    "globals": "^16.5.0",
+    "rollup": "^4.9.6"
+  }
+}

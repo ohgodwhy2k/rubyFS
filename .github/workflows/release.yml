@@ -1,0 +1,43 @@
+name: Quick Release
+
+on:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: write
+
+jobs:
+  build-and-release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run build script
+        run: npm run build
+
+      # --- DEBUG STEP ADDED ---
+      - name: List Output Files
+        run: |
+          echo "Checking contents of dist/ directory:"
+          ls -l dist/
+        # ------------------------
+
+      - name: Release!
+        uses: softprops/action-gh-release@v1
+        with:
+          # Changed from "./dist/extension.js" to "dist/extension.js"
+          files: "dist/extension.js"
+
+          prerelease: ${{ contains(github.ref, 'beta') || contains(github.ref, 'alpha') || contains(github.ref, 'rc') }}

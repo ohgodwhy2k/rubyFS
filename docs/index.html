@@ -1,0 +1,1196 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="QuickDocs Viewer" />
+    <title>QuickDocs</title>
+
+    <!-- Fonts: Poppins (UI) & JetBrains Mono (Code) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&family=Poppins:wght@300;400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+
+    <!-- Highlight.js Themes (Switched via JS) -->
+    <link
+      id="hljs-dark"
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css"
+    />
+    <link
+      id="hljs-light"
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-light.min.css"
+      disabled
+    />
+
+    <style>
+      /* --- Material Design 3 Tokens --- */
+      :root {
+        /* Palette: M3 Purple Based (Default) */
+        --md-ref-palette-primary-40: #6750a4;
+        --md-ref-palette-primary-90: #eaddff;
+
+        --md-ref-palette-neutral-10: #1d1b20;
+        --md-ref-palette-neutral-90: #e6e1e5;
+        --md-ref-palette-neutral-95: #f4eff4;
+        --md-ref-palette-neutral-99: #fffbfe;
+
+        --md-ref-palette-error-40: #b3261e;
+        --md-ref-palette-error-90: #f9dedc;
+
+        /* Light Theme Mapping */
+        --md-sys-color-background: var(--md-ref-palette-neutral-99);
+        --md-sys-color-on-background: var(--md-ref-palette-neutral-10);
+        --md-sys-color-surface: var(--md-ref-palette-neutral-99);
+        --md-sys-color-on-surface: var(--md-ref-palette-neutral-10);
+        --md-sys-color-surface-container: var(--md-ref-palette-neutral-95);
+        --md-sys-color-primary: var(--md-ref-palette-primary-40);
+        --md-sys-color-on-primary: #ffffff;
+        --md-sys-color-primary-container: var(--md-ref-palette-primary-90);
+        --md-sys-color-on-primary-container: #21005d;
+        --md-sys-color-outline: #79747e;
+        --md-sys-color-outline-variant: #cac4d0;
+        --md-sys-color-error: var(--md-ref-palette-error-40);
+
+        /* Typography */
+        --font-sans: "Poppins", sans-serif;
+        --font-mono: "JetBrains Mono", monospace;
+
+        /* Dimensions */
+        --sidebar-width: 300px;
+        --header-height: 64px;
+        --border-radius-lg: 16px;
+        --border-radius-pill: 50px;
+
+        /* Animation */
+        --md-sys-motion-easing-emphasized: cubic-bezier(0.2, 0, 0, 1);
+        --md-sys-motion-duration-medium: 300ms;
+      }
+
+      [data-theme="dark"] {
+        /* Dark Theme Mapping */
+        --md-sys-color-background: #141218;
+        --md-sys-color-on-background: #e6e1e5;
+        --md-sys-color-surface: #141218;
+        --md-sys-color-on-surface: #e6e1e5;
+        --md-sys-color-surface-container: #2b2930;
+        --md-sys-color-primary: #d0bcff;
+        --md-sys-color-on-primary: #381e72;
+        --md-sys-color-primary-container: #4f378b;
+        --md-sys-color-on-primary-container: #eaddff;
+        --md-sys-color-outline: #938f99;
+        --md-sys-color-outline-variant: #49454f;
+        --md-sys-color-error: #f2b8b5;
+      }
+
+      /* --- Base Setup --- */
+      * {
+        box-sizing: border-box;
+        -webkit-font-smoothing: antialiased;
+      }
+
+      body {
+        margin: 0;
+        font-family: var(--font-sans);
+        background: var(--md-sys-color-background);
+        color: var(--md-sys-color-on-background);
+        height: 100vh;
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+        transition: background-color var(--md-sys-motion-duration-medium);
+      }
+
+      /* --- Global Custom Scrollbar --- */
+      ::-webkit-scrollbar {
+        width: 8px;
+        height: 8px;
+      }
+      ::-webkit-scrollbar-track {
+        background: transparent;
+      }
+      ::-webkit-scrollbar-thumb {
+        background: var(--md-sys-color-outline-variant);
+        border-radius: 4px;
+      }
+      ::-webkit-scrollbar-thumb:hover {
+        background: var(--md-sys-color-outline);
+      }
+
+      /* --- Animations --- */
+      @keyframes fadeIn {
+        from {
+          opacity: 0;
+          transform: translateY(10px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+      @keyframes slideInLeft {
+        from {
+          transform: translateX(-100%);
+        }
+        to {
+          transform: translateX(0);
+        }
+      }
+      @keyframes popIn {
+        from {
+          transform: scale(0.9);
+          opacity: 0;
+        }
+        to {
+          transform: scale(1);
+          opacity: 1;
+        }
+      }
+
+      /* --- Header --- */
+      header {
+        height: var(--header-height);
+        background: var(--md-sys-color-surface);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0 16px;
+        position: relative;
+        z-index: 50;
+        border-bottom: 1px solid var(--md-sys-color-outline-variant);
+      }
+
+      .brand {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        font-weight: 600;
+        font-size: 1.25rem;
+        letter-spacing: -0.5px;
+        color: var(--md-sys-color-on-background);
+      }
+
+      .brand-icon-wrapper {
+        width: 32px;
+        height: 32px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 8px;
+        overflow: hidden;
+      }
+      .brand-icon-wrapper img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+      }
+      .brand-icon-wrapper svg {
+        width: 24px;
+        height: 24px;
+      }
+
+      .badge {
+        background: var(--md-sys-color-primary-container);
+        color: var(--md-sys-color-on-primary-container);
+        padding: 2px 10px;
+        border-radius: 6px;
+        font-size: 0.75rem;
+        font-weight: 600;
+        white-space: nowrap;
+      }
+
+      .read-time-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        font-size: 0.75rem;
+        color: var(--md-sys-color-outline);
+        margin-left: 8px;
+      }
+
+      /* --- Buttons --- */
+      .btn-icon {
+        background: transparent;
+        border: none;
+        color: var(--md-sys-color-on-background);
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: background 0.2s;
+      }
+      .btn-icon:hover {
+        background: var(--md-sys-color-surface-container);
+      }
+      .btn-icon svg {
+        width: 24px;
+        height: 24px;
+        stroke-width: 2;
+      }
+
+      .btn-filled {
+        background: var(--md-sys-color-primary);
+        color: var(--md-sys-color-on-primary);
+        border: none;
+        height: 40px;
+        padding: 0 24px;
+        border-radius: var(--border-radius-pill);
+        font-family: var(--font-sans);
+        font-weight: 500;
+        font-size: 0.875rem;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+        transition: all 0.2s;
+      }
+      .btn-filled:hover {
+        box-shadow: 0 3px 6px rgba(0, 0, 0, 0.15);
+        filter: brightness(1.05);
+      }
+
+      /* --- Sidebar --- */
+      .main-container {
+        display: flex;
+        height: calc(100vh - var(--header-height));
+        position: relative;
+      }
+
+      #sidebar {
+        width: var(--sidebar-width);
+        background: var(--md-sys-color-surface-container);
+        border-right: 1px solid var(--md-sys-color-outline-variant);
+        display: flex;
+        flex-direction: column;
+        flex-shrink: 0;
+        overflow: hidden;
+        transition:
+          width 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+          transform 0.3s;
+        animation: slideInLeft 0.5s var(--md-sys-motion-easing-emphasized);
+      }
+
+      #sidebar.collapsed {
+        width: 0;
+        margin: 0;
+        border-right: none;
+      }
+
+      .search-container {
+        padding: 16px;
+        min-width: var(--sidebar-width);
+      }
+      .search-input {
+        width: calc(var(--sidebar-width) - 32px);
+        height: 40px;
+        background: var(--md-sys-color-surface);
+        border: none;
+        border-radius: var(--border-radius-pill);
+        padding: 0 16px;
+        color: var(--md-sys-color-on-background);
+        font-family: var(--font-sans);
+        font-size: 0.9rem;
+        outline: none;
+        box-shadow: 0 0 0 1px var(--md-sys-color-outline-variant);
+        transition: box-shadow 0.2s;
+      }
+      .search-input:focus {
+        box-shadow: 0 0 0 2px var(--md-sys-color-primary);
+      }
+
+      #toc-list {
+        list-style: none;
+        padding: 0 12px;
+        margin: 0;
+        overflow-y: auto;
+        flex: 1;
+        min-width: var(--sidebar-width);
+      }
+
+      #toc-list a {
+        display: block;
+        padding: 8px 16px;
+        text-decoration: none;
+        color: var(--md-sys-color-on-background);
+        font-size: 0.85rem;
+        font-weight: 500;
+        border-radius: var(--border-radius-pill);
+        margin-bottom: 2px;
+        transition: background 0.2s;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+      #toc-list a:hover {
+        background: rgba(0, 0, 0, 0.05);
+      }
+      #toc-list a.active {
+        background: var(--md-sys-color-primary-container);
+        color: var(--md-sys-color-on-primary-container);
+        font-weight: 600;
+      }
+
+      .toc-depth-3 {
+        padding-left: 28px !important;
+        opacity: 0.9;
+      }
+
+      /* --- Content Area --- */
+      #content-wrapper {
+        flex: 1;
+        overflow-y: auto;
+        scroll-behavior: smooth;
+        background: var(--md-sys-color-background);
+        position: relative;
+      }
+
+      .render-container {
+        max-width: 900px;
+        margin: 0 auto;
+        padding: 0 24px 120px 24px;
+        animation: fadeIn 0.6s var(--md-sys-motion-easing-emphasized);
+      }
+
+      /* Banner Image */
+      #doc-banner {
+        width: 100%;
+        height: 250px;
+        background-size: cover;
+        background-position: center;
+        border-radius: 0 0 var(--border-radius-lg) var(--border-radius-lg);
+        margin-bottom: 40px;
+        display: none;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+      }
+
+      /* --- Markdown Styling --- */
+      #markdown-render h1,
+      h2,
+      h3,
+      h4,
+      h5,
+      h6 {
+        scroll-margin-top: calc(var(--header-height) + 30px);
+      }
+      #markdown-render h1 {
+        font-weight: 700;
+        font-size: 2.5rem;
+        letter-spacing: -1px;
+        margin-bottom: 1.5rem;
+        color: var(--md-sys-color-primary);
+      }
+      #markdown-render h2 {
+        font-weight: 600;
+        font-size: 1.75rem;
+        margin-top: 3rem;
+        margin-bottom: 1rem;
+        border-bottom: 1px solid var(--md-sys-color-outline-variant);
+        padding-bottom: 8px;
+      }
+
+      #markdown-render p {
+        line-height: 1.8;
+        margin-bottom: 1.2rem;
+        font-size: 1rem;
+        color: var(--md-sys-color-on-background);
+      }
+      #markdown-render a {
+        color: var(--md-sys-color-primary);
+        font-weight: 600;
+        text-decoration: none;
+      }
+      #markdown-render a:hover {
+        text-decoration: underline;
+      }
+
+      table {
+        width: 100%;
+        border-collapse: separate;
+        border-spacing: 0;
+        margin: 2rem 0;
+        border-radius: 12px;
+        overflow: hidden;
+        border: 1px solid var(--md-sys-color-outline-variant);
+      }
+      th {
+        background: var(--md-sys-color-surface-container);
+        font-weight: 600;
+        text-align: left;
+        padding: 14px 16px;
+        border-bottom: 2px solid var(--md-sys-color-outline-variant);
+      }
+      td {
+        padding: 12px 16px;
+        border-bottom: 1px solid var(--md-sys-color-outline-variant);
+        font-size: 0.95rem;
+      }
+      tr:last-child td {
+        border-bottom: none;
+      }
+
+      #markdown-render img {
+        max-width: 100%;
+        border-radius: 12px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        margin: 20px 0;
+      }
+
+      .task-list-wrapper {
+        display: flex;
+        align-items: flex-start;
+        gap: 12px;
+        margin-bottom: 8px;
+        line-height: 1.8;
+      }
+      input[type="checkbox"] {
+        appearance: none;
+        width: 18px;
+        height: 18px;
+        border: 2px solid var(--md-sys-color-outline);
+        border-radius: 4px;
+        cursor: pointer;
+        flex-shrink: 0;
+        display: grid;
+        place-content: center;
+        margin-top: 6px;
+        background-color: var(--md-sys-color-surface);
+      }
+      input[type="checkbox"]:checked {
+        background-color: var(--md-sys-color-primary);
+        border-color: var(--md-sys-color-primary);
+      }
+      input[type="checkbox"]:checked::after {
+        content: "";
+        width: 4px;
+        height: 8px;
+        border: solid var(--md-sys-color-on-primary);
+        border-width: 0 2px 2px 0;
+        transform: rotate(45deg);
+        margin-top: -2px;
+      }
+
+      .code-container {
+        position: relative;
+        margin: 1.5rem 0;
+        border-radius: 12px;
+        overflow: hidden;
+        border: 1px solid var(--md-sys-color-outline-variant);
+      }
+      pre {
+        margin: 0;
+        padding: 1.5rem;
+        overflow-x: auto;
+      }
+      code {
+        font-family: var(--font-mono);
+        font-size: 0.9rem;
+      }
+      :not(pre) > code {
+        background: var(--md-sys-color-surface-container);
+        color: var(--md-sys-color-primary);
+        padding: 3px 6px;
+        border-radius: 6px;
+        font-size: 0.85em;
+      }
+
+      .copy-btn {
+        position: absolute;
+        top: 8px;
+        right: 8px;
+        background: var(--md-sys-color-surface-container);
+        border: 1px solid var(--md-sys-color-outline-variant);
+        color: var(--md-sys-color-on-surface);
+        border-radius: 6px;
+        padding: 6px 10px;
+        font-size: 0.75rem;
+        font-weight: 500;
+        cursor: pointer;
+        opacity: 0;
+        transition: 0.2s;
+        z-index: 10;
+      }
+      .code-container:hover .copy-btn {
+        opacity: 1;
+      }
+
+      blockquote {
+        border-left: 4px solid var(--md-sys-color-primary);
+        background: var(--md-sys-color-surface-container);
+        margin: 1.5rem 0;
+        padding: 1rem 1.5rem;
+        border-radius: 0 12px 12px 0;
+        font-style: italic;
+        opacity: 0.9;
+      }
+
+      /* --- Modals --- */
+      .modal-backdrop {
+        display: none;
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.6);
+        z-index: 9999;
+        align-items: center;
+        justify-content: center;
+        backdrop-filter: blur(4px);
+      }
+      .modal-card {
+        background: var(--md-sys-color-surface);
+        padding: 24px;
+        border-radius: 24px;
+        width: 100%;
+        max-width: 400px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        animation: popIn 0.3s;
+      }
+      .modal-title {
+        font-size: 1.25rem;
+        font-weight: 600;
+        margin-bottom: 12px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+
+      #input-modal {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh;
+        background: var(--md-sys-color-background);
+        z-index: 9998;
+        flex-direction: column;
+        animation: fadeIn 0.3s ease-out;
+      }
+      .modal-header {
+        height: 64px;
+        padding: 0 16px;
+        background: var(--md-sys-color-surface-container);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+      }
+      .modal-editor {
+        flex: 1;
+        width: 100%;
+        border: none;
+        padding: 24px;
+        resize: none;
+        background: var(--md-sys-color-background);
+        color: var(--md-sys-color-on-background);
+        font-family: var(--font-mono);
+        font-size: 1rem;
+        line-height: 1.6;
+        outline: none;
+      }
+
+      /* --- Responsive & Print --- */
+      .overlay {
+        display: none;
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.5);
+        z-index: 40;
+        backdrop-filter: blur(2px);
+      }
+
+      @media (max-width: 800px) {
+        :root {
+          --sidebar-width: 280px;
+        }
+        #sidebar {
+          position: fixed;
+          top: 0;
+          left: 0;
+          bottom: 0;
+          margin: 0;
+          z-index: 50;
+          transform: translateX(-100%);
+          box-shadow: 5px 0 25px rgba(0, 0, 0, 0.2);
+          border-right: none;
+        }
+        #sidebar.open {
+          transform: translateX(0);
+        }
+        #sidebar.collapsed {
+          width: var(--sidebar-width);
+        }
+        .overlay.open {
+          display: block;
+        }
+        .brand span {
+          display: none;
+        }
+        .render-container {
+          padding: 0 16px 80px 16px;
+        }
+      }
+
+      @media print {
+        header,
+        #sidebar,
+        .overlay,
+        .copy-btn,
+        .btn-icon,
+        .btn-filled {
+          display: none !important;
+        }
+        .main-container {
+          height: auto;
+          display: block;
+        }
+        #content-wrapper {
+          overflow: visible;
+        }
+        #markdown-render {
+          max-width: 100%;
+          padding: 0;
+        }
+        #doc-banner {
+          height: 150px;
+          -webkit-print-color-adjust: exact;
+          print-color-adjust: exact;
+        }
+        body {
+          background: white;
+          color: black;
+        }
+      }
+
+      /* Loader */
+      .loader {
+        width: 48px;
+        height: 48px;
+        border: 5px solid var(--md-sys-color-surface-container);
+        border-bottom-color: var(--md-sys-color-primary);
+        border-radius: 50%;
+        display: inline-block;
+        animation: rotation 1s linear infinite;
+        margin-top: 50px;
+      }
+      @keyframes rotation {
+        0% {
+          transform: rotate(0deg);
+        }
+        100% {
+          transform: rotate(360deg);
+        }
+      }
+    </style>
+
+    <script>
+      // Init Theme
+      const savedTheme =
+        localStorage.getItem("theme") ||
+        (window.matchMedia("(prefers-color-scheme: dark)").matches
+          ? "dark"
+          : "light");
+      document.documentElement.setAttribute("data-theme", savedTheme);
+      function syncHljsTheme(theme) {
+        document.getElementById("hljs-light").disabled = theme !== "light";
+        document.getElementById("hljs-dark").disabled = theme !== "dark";
+      }
+      syncHljsTheme(savedTheme);
+    </script>
+    <link
+      id="dynamic-favicon"
+      rel="icon"
+      type="image/svg+xml"
+      href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIGhlaWdodD0iNDhweCIgdmlld0JveD0iMCAtOTYwIDk2MCA5NjAiIHdpZHRoPSI0OHB4IiBmaWxsPSIjNjczMGE0Ij48cGF0aCBkPSJNNTU5LTg2Mmw1LTUtMTVzMzYtNDctNDItNjFjLTctMTYtMTYtMjEtMzEtMjEtNDMgMC01MyAxOC03MiA0MC0xOSAxOS0yMSAzNS0zMiA1MC0xNSA2LTI1IDUtMzQgMS04LTQtMjEtMTEtMzEtMTYtMTItNi0yNC03LTM2LTItMjIgOS0zNSAzNi00NiA3Mi01IDIyLTkgMzYtMTUgNDktNiAxMy0yMCAyNS0yMiAzMC01IDExIDIgMTYgMTcgMTcgMTYgMCAyOC05IDQxLTI2IDg4LTI1IDIzMS0xMiAyOTktMTIgMTIgMCAyNC01IDMzLTE2IDEwLTExIDEzLTI1IDEzLTM5Vjc1N3YtNzA3em0tMzAgODlsMTMgMTNjLTggMTYtMTcgMjYtMzEgMzMtMjggMTMtNjIgMjEtOTMgMjEtMjYgMC00Ni04LTY5LTMwLTMyLTMwLTQ2LTcyLTQ0LTExOCAxLTYyIDIzLTEwMyAzNC0xMTkgMTYtMTkgMzktMzEgNjctMzEgMjYgMCA0NyAxMiA2MCAzMmw3LTdoLTcxdi05MyBoMjQ5djMwMmwtNDctNDd6bTI5Ni04NmwtMTcgMTJjMTUgMTggMTcgMzMgMTcgNDkgMCAxMy00IDI1LTEyIDM1LTggMTAtMjIgMTctMzUgMjMtMTkgOS0zOCA5LTU2IDAtMjEtMTAtMzktMjUtNTEtNDUtNi0xMS0xMi0yNC0xNC0zOWMtMi0xNyA0LTMyIDE5LTQ2IDE0LTE0IDM0LTIwIDU2LTIwIDIxIDAgNDAgNiA1NiAxOCAxNiAxMiAyNiAyNiAzMCA0MyAzIDkgMiAyMy00IDM2LTEzIDI3LTMzIDQ5LTYwIDY2LTI2IDE1LTYxIDI3LTEwMiAzM3Y3aDI0OXYtMzQwbC00Ny00Ny41djE2LjVjLTItMzAtMTEtNTktMjgtODUtMTQtMjAtMzAtMzctNDctNDktMjctMjAtNTQtMjctNzgtMjctMzcgMC03MiAxMi05NiAzNmMtMjUgMjQtMzggNTYtMzggOTNjMCAzNSAxMCA2OCAzMSA5NnptLTQ3Mi0yMjJjLTUgMC0xMCA1LTEwIDEwcjUgMTBjNSA1IDEwIDUgMTAgMHMtNS01LTEwLTEwem0zMTUgMTA5YzkgMTQgMjAgMjQgMzMgMzMgMjUgMTMgNTIgMjUgNzggMzIgMTMgMyAyMy0yIDMyLTMgMTItNyAyMy0xNSAzMi0yNiA5LTExIDE1LTI1IDE1LTM5VjU1NmMwLTEzLTctMjQtMjAtMjktMTItNS0yNS0yLTMyIDZoLTcxdi05MGgxODF2MjAxYy05IDQtMTggOS0yOCAxNnptLTQ4Mi0yMDdjLTUgMC0xMCA1LTEwIDEwcjUgMTBjNSA1IDEwIDUgMTAgMHMtNS01LTEwLTEwem0yMjggMjM3YzEwIDcgMTUgMTYgMTUgMjdsLTQ2LTQ2em0tMjY2LTc2djE1MmgxODF2LTMyOWwtMTQtMTNjLTExIDgtMjEgMTctMzAgMjh6bS01NiAxMDBjLTUgMC0xMCA1LTEwIDEwczUgMTAgMTAgMTAgMTAtNSAxMC0xMHMtNS01LTEwLTEwem0xMjUgMTczYzQgMTIgMTAgMjIgMTkgMzJzMjAgMTggMzIgMjZjMjUgMTYgNTMgMjMgODcgMjMgMzAgMCA1Ny04IDc5LTI0IDIzLTE3IDQyLTM5IDU3LTY1bDMtNmMtMTQgMTEtMzAgMTktNDcgMjUtMTYgNi0zMiAxMC00OSAxMC01NSAwLTEwMS0yMy0xMzUtNjhzLTU3LTEwNi01NS0xNjJ6bTEyLTM5NWMwIDEyIDcgMjIgMTggMjcgMTEgNSA2IDEzLTMgMTdjLTE0IDE2LTM0IDI1LTU3IDI1LTE4IDAtMzItNi00NC0xOC0xMy0xMi0yMC0yNi0yMC00MyAwLTE0IDYtMjcgMTctMzhzMjUtMTkgNDAtMjBjMTIgMCAyMyA1IDMwIDE0IDggOSAxMCAyMSAzIDMyem01MzMgMjU3Yy01IDAtMTAgNS0xMCAxMHMyIDIgMiAzYy05IDE1LTE3IDI3LTI1IDM4bDc1LTc1em0tMTAgMTA1YzYtMTIgMTItMjIgMTctMzFsNDctNDd2NzBjLTcgMTItMTQgMjItMjEgMzF6bS0xMzIgMjM2Yy03IDExLTExIDI0LTExIDQwcDAgMzgtOCAxNmMtNSAzLTcgOC0yIDEyIDQgNCAxNSA2IDI3IDZzMjMtMiAzNC02YzEwLTYgMjMtMTQtMzQtNTR6bTExOC05NmwtMTIgMTJsMjMgMjFjLTUgNi05IDEyLTE0IDE3em00MC01NmwtNTYtNTZjLTQgMi04IDMtMTMgM2gtNDdjLTUgMC0xMCA0LTEwIDEwcy00IDExLTEgMTVsMTMgMThjOSA3IDExIDE2IDQgMjVzLTE4IDE3LTMwIDE3Yy0yMSAwLTM2LTE2LTQ1LTM3LTI2LTQtMzctMjMtMzctNDh2LTVjMC0zNSAxMS02NiAzMi05MSAyMy0yNSAyNi00NyA1LTY3LTIxLTIwLTQ3LTMyLTc0LTMyLTI3IDAtNTEgMTEtNjkgMzQtMjMgMjctMzUgNjEtMzkgMTA2di00NGMxLTcgNS0xMiAxMy0xMnMxNSA0IDE3IDEwYzMgNiAyIDE0LTYgMTljLTYgNC03IDExLTIgMTZjNSAzIDggOCAzIDExcy03IDktMTQgMTJjLTggMy0xOSA1LTI4IDVzLTE5LTItMjgtNWMtMTAtMy0yMC0xMS0yNi0yMS0xNC0yMy0xOC00Ny0xMi02OCAxLTMgNi02IDExLTdsMzItMi0yIDMzYy0zIDE4LTMgMzYtMSA1M3MxMCAzMiAyNiA0N2M3IDEwIDE5IDE5IDMzIDI1IDI1IDExIDUzIDExIDc2IDAgMTUtNiAyNy0xNiAzNi0yN3MzMy01NCA0Ny0xMTcgNjItMTE2IDExMi0xMTZsLTExMy0xMTl6Ii8+PC9zdmc+"
+    />
+  </head>
+  <body>
+    <!-- Metadata Warning Modal -->
+    <div id="warning-modal" class="modal-backdrop">
+      <div class="modal-card">
+        <div class="modal-title" style="color: var(--md-sys-color-error)">
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            width="24"
+            height="24"
+          >
+            <circle cx="12" cy="12" r="10"></circle>
+            <line x1="12" y1="8" x2="12" y2="12"></line>
+            <line x1="12" y1="16" x2="12.01" y2="16"></line>
+          </svg>
+          Format Warning
+        </div>
+        <div class="modal-body">
+          Missing <strong>QuickDocs</strong> metadata block. Some features may
+          not work.
+        </div>
+        <div
+          class="modal-actions"
+          style="display: flex; justify-content: flex-end"
+        >
+          <button
+            class="btn-filled"
+            onclick="document.getElementById('warning-modal').style.display='none'"
+          >
+            OK
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Full Screen Editor Modal -->
+    <div id="input-modal">
+      <div class="modal-header">
+        <div style="display: flex; align-items: center; gap: 10px">
+          <button
+            class="btn-icon"
+            onclick="document.getElementById('input-modal').style.display='none'"
+          >
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+              <line x1="18" y1="6" x2="6" y2="18"></line>
+              <line x1="6" y1="6" x2="18" y2="18"></line>
+            </svg>
+          </button>
+          <span style="font-weight: 600; font-size: 1.1rem">Manual Editor</span>
+        </div>
+        <div style="display: flex; gap: 10px">
+          <button class="btn-filled" onclick="updateContent()">
+            <svg
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              style="width: 18px; height: 18px"
+            >
+              <polyline points="20 6 9 17 4 12"></polyline>
+            </svg>
+            Render
+          </button>
+        </div>
+      </div>
+      <textarea
+        id="manual-input"
+        class="modal-editor"
+        placeholder="```&#10;icon: blank&#10;title: Project Name&#10;version: 1.0.0&#10;banner: https://source.unsplash.com/random/1200x400/?technology&#10;color: #6750a4&#10;```&#10;&#10;# Documentation Start&#10;Write your docs here..."
+      ></textarea>
+    </div>
+
+    <!-- Main App -->
+    <header>
+      <div style="display: flex; align-items: center; gap: 12px">
+        <button
+          class="btn-icon mobile-menu"
+          onclick="toggleSidebar()"
+          aria-label="Menu"
+        >
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+            <line x1="3" y1="12" x2="21" y2="12"></line>
+            <line x1="3" y1="6" x2="21" y2="6"></line>
+            <line x1="3" y1="18" x2="21" y2="18"></line>
+          </svg>
+        </button>
+        <div class="brand">
+          <div class="brand-icon-wrapper" id="brand-icon">
+            <svg
+              viewBox="0 0 24 24"
+              fill="var(--md-sys-color-primary)"
+              stroke="none"
+            >
+              <path
+                d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"
+              ></path>
+            </svg>
+          </div>
+          <span id="brand-title">QuickDocs</span>
+          <span class="badge" id="brand-version">v1.0</span>
+          <span class="read-time-badge" id="read-time-display"></span>
+        </div>
+      </div>
+
+      <div style="display: flex; align-items: center; gap: 8px">
+        <button class="btn-icon" onclick="toggleTheme()" aria-label="Theme">
+          <svg
+            id="theme-icon"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+          >
+            <circle cx="12" cy="12" r="5"></circle>
+            <line x1="12" y1="1" x2="12" y2="3"></line>
+            <line x1="12" y1="21" x2="12" y2="23"></line>
+            <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+            <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+            <line x1="1" y1="12" x2="3" y2="12"></line>
+            <line x1="21" y1="12" x2="23" y2="12"></line>
+            <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+            <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+          </svg>
+        </button>
+        <!-- Only visible in manual/fallback mode -->
+        <button
+          class="btn-filled"
+          id="edit-mode-btn"
+          onclick="openEditor()"
+          style="display: none"
+        >
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            style="width: 18px; height: 18px"
+          >
+            <path
+              d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"
+            ></path>
+            <path
+              d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"
+            ></path>
+          </svg>
+          <span class="desktop-only">Edit</span>
+        </button>
+      </div>
+    </header>
+
+    <div class="main-container">
+      <div class="overlay" onclick="toggleSidebar()"></div>
+
+      <aside id="sidebar">
+        <div class="search-container">
+          <input
+            type="text"
+            class="search-input"
+            placeholder="Search topics..."
+            id="search-input"
+            autocomplete="off"
+          />
+        </div>
+        <ul id="toc-list"></ul>
+      </aside>
+
+      <div id="content-wrapper">
+        <div style="text-align: center; display: none" id="loader">
+          <span class="loader"></span>
+        </div>
+
+        <div class="render-container">
+          <!-- Banner Image Area -->
+          <div id="doc-banner"></div>
+          <div id="markdown-render"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Libraries -->
+    <script src="https://cdn.jsdelivr.net/npm/marked@9.1.2/marked.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.0.6/purify.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/mermaid@10.6.1/dist/mermaid.min.js"></script>
+
+    <script>
+      // Configuration for file fetching
+      const CONFIG = {
+        files: ["docs.md", "README.md", "content.md"],
+      };
+
+      const BLANK_SVG = `<svg xmlns="http://www.w3.org/2000/svg" height="48px" viewBox="0 -960 960 960" width="48px" fill="currentColor"><path d="M656.11-151q11.89 0 19.89-8.11t8-20q0-11.89-8.11-19.89t-20-8Q644-207 636-198.89t-8 20q0 11.89 8.11 19.89t20 8ZM656-412q-20 0-38.29 10.04Q599.43-391.91 588-375q-5 7-1.5 14t11.5 11q6.64 3 13.29-.2 6.64-3.2 12.17-8.87Q629-367 637.31-371q8.31-4 18.28-4 14.41 0 25.41 9.35T692-342q0 11-7 19.5T670-306q-8 7-15.5 13.5T642-277q-4 6-5 13.17t-1 14.9q0 9.93 5.56 17.93 5.55 8 14.44 8 8 0 14-6.39 6-6.38 6-14.9 0-11.71 6.5-21.71t15.7-18.42Q712-296 722-310.44T732-342q0-29.53-22.35-49.77Q687.29-412 656-412Zm-1 331q-80.51 0-137.26-56.74Q461-194.49 461-275q0-80.51 56.74-137.26Q574.49-469 655-469q80.51 0 137.26 56.74Q849-355.51 849-275q0 80.51-56.74 137.26Q735.51-81 655-81ZM541-634h159L511-820l189 186-189-186v156q0 12.75 8.63 21.37Q528.25-634 541-634ZM180-80q-24.75 0-42.37-17.63Q120-115.25 120-140v-680q0-24.75 17.63-42.38Q155.25-880 180-880h336q12.44 0 23.72 5T559-862l183 183q8 8 13 19.28 5 11.28 5 23.72v93q0 14-11 21.5t-24 2.5q-17-5-34.67-7.5Q672.67-529 655-529q-42 0-80 13t-70 36H309q-12.75 0-21.37 8.68-8.63 8.67-8.63 21.5 0 12.82 8.63 21.32 8.62 8.5 21.37 8.5h137q-17 24-27.4 52.2-10.4 28.19-15.6 57.8h-94q-12.75 0-21.37 8.68-8.63 8.67-8.63 21.5 0 12.82 8.63 21.32 8.62 8.5 21.37 8.5h93q4 37 18 71t37 63q9 11 3.5 23.5T442-80H180Z"/></svg>`;
+
+      let headings = [];
+      let currentMode = "file"; // 'file' or 'manual'
+
+      // --- Init ---
+      document.addEventListener("DOMContentLoaded", async () => {
+        mermaid.initialize({
+          startOnLoad: false,
+          theme: "base",
+          themeVariables: { fontFamily: "Poppins" },
+        });
+
+        const loader = document.getElementById("loader");
+        loader.style.display = "inline-block";
+
+        let fetched = "";
+
+        // Try to fetch files from CONFIG
+        for (const file of CONFIG.files) {
+          fetched = await tryFetch(file);
+          if (fetched) break;
+        }
+
+        if (fetched) {
+          currentMode = "file";
+          render(fetched);
+          // Hide Edit Button on successful load
+          document.getElementById("edit-mode-btn").style.display = "none";
+        } else {
+          // Failover to manual mode
+          currentMode = "manual";
+          loader.style.display = "none";
+          document.getElementById("edit-mode-btn").style.display = "flex";
+          openEditor(); // Prompt user immediately
+        }
+
+        // Search Logic
+        document
+          .getElementById("search-input")
+          .addEventListener("input", (e) => {
+            const term = e.target.value.toLowerCase();
+            document.querySelectorAll("#toc-list li").forEach((li) => {
+              li.style.display = li.textContent.toLowerCase().includes(term)
+                ? "block"
+                : "none";
+            });
+          });
+      });
+
+      // --- Functions ---
+      function openEditor() {
+        document.getElementById("input-modal").style.display = "flex";
+      }
+
+      async function tryFetch(url) {
+        try {
+          const res = await fetch(url);
+          return res.ok ? await res.text() : null;
+        } catch (e) {
+          return null;
+        }
+      }
+
+      function updateContent() {
+        const val = document.getElementById("manual-input").value;
+        if (val.trim()) {
+          currentMode = "manual";
+          document.getElementById("edit-mode-btn").style.display = "flex";
+          render(val);
+          document.getElementById("input-modal").style.display = "none";
+        }
+      }
+
+      function calculateReadTime(text) {
+        const wpm = 200;
+        const words = text.trim().split(/\s+/).length;
+        const time = Math.ceil(words / wpm);
+        return time + " min read";
+      }
+
+      function render(markdown) {
+        document.getElementById("loader").style.display = "none";
+        headings = [];
+        let content = markdown.trim();
+
+        // 1. Parse Metadata
+        const codeBlockRegex = /^```(?:\w+)?\s*\n([\s\S]*?)\n```/;
+        const match = content.match(codeBlockRegex);
+
+        // Reset Banner and Favicon
+        const bannerEl = document.getElementById("doc-banner");
+        bannerEl.style.display = "none";
+        bannerEl.style.backgroundImage = "";
+        const faviconEl = document.getElementById("dynamic-favicon"); // Get the new favicon link element
+
+        // Default favicon (QuickDocs SVG icon with default color)
+        const defaultIconSvg = `<svg xmlns="http://www.w3.org/2000/svg" height="48px" viewBox="0 -960 960 960" width="48px" fill="var(--md-sys-color-primary)"><path d="M656.11-151q11.89 0 19.89-8.11t8-20q0-11.89-8.11-19.89t-20-8Q644-207 636-198.89t-8 20q0 11.89 8.11 19.89t20 8ZM656-412q-20 0-38.29 10.04Q599.43-391.91 588-375q-5 7-1.5 14t11.5 11q6.64 3 13.29-.2 6.64-3.2 12.17-8.87Q629-367 637.31-371q8.31-4 18.28-4 14.41 0 25.41 9.35T692-342q0 11-7 19.5T670-306q-8 7-15.5 13.5T642-277q-4 6-5 13.17t-1 14.9q0 9.93 5.56 17.93 5.55 8 14.44 8 8 0 14-6.39 6-6.38 6-14.9 0-11.71 6.5-21.71t15.7-18.42Q712-296 722-310.44T732-342q0-29.53-22.35-49.77Q687.29-412 656-412Zm-1 331q-80.51 0-137.26-56.74Q461-194.49 461-275q0-80.51 56.74-137.26Q574.49-469 655-469q80.51 0 137.26 56.74Q849-355.51 849-275q0 80.51-56.74 137.26Q735.51-81 655-81ZM541-634h159L511-820l189 186-189-186v156q0 12.75 8.63 21.37Q528.25-634 541-634ZM180-80q-24.75 0-42.37-17.63Q120-115.25 120-140v-680q0-24.75 17.63-42.38Q155.25-880 180-880h336q12.44 0 23.72 5T559-862l183 183q8 8 13 19.28 5 11.28 5 23.72v93q0 14-11 21.5t-24 2.5q-17-5-34.67-7.5Q672.67-529 655-529q-42 0-80 13t-70 36H309q-12.75 0-21.37 8.68-8.63 8.67-8.63 21.5 0 12.82 8.63 21.32 8.62 8.5 21.37 8.5h137q-17 24-27.4 52.2-10.4 28.19-15.6 57.8h-94q-12.75 0-21.37 8.68-8.63 8.67-8.63 21.5 0 12.82 8.63 21.32 8.62 8.5 21.37 8.5h93q4 37 18 71t37 63q9 11 3.5 23.5T442-80H180Z"/></svg>`;
+
+        // Set the favicon to the QuickDocs default icon initially (using the default color)
+        faviconEl.href =
+          "data:image/svg+xml;base64," +
+          btoa(
+            defaultIconSvg.replace(
+              'fill="var(--md-sys-color-primary)"',
+              'fill="#6750a4"',
+            ),
+          );
+        faviconEl.type = "image/svg+xml";
+
+        if (match) {
+          const metaLines = match[1].split("\n");
+          const metaObj = {};
+
+          metaLines.forEach((line) => {
+            const sepIndex = line.indexOf(":");
+            if (sepIndex > -1) {
+              const key = line.slice(0, sepIndex).trim().toLowerCase();
+              const val = line.slice(sepIndex + 1).trim();
+              metaObj[key] = val;
+            }
+          });
+
+          if (metaObj.title) {
+            document.getElementById("brand-title").textContent = metaObj.title;
+            document.getElementById("brand-version").textContent =
+              metaObj.version || "";
+
+            // Icon
+            const iconWrapper = document.getElementById("brand-icon");
+            if (metaObj.icon) {
+              if (metaObj.icon.toLowerCase() === "blank") {
+                iconWrapper.innerHTML = BLANK_SVG;
+
+                // Set Favicon to BLANK_SVG, applying the custom color if available
+                const favColor = metaObj.color || "#6750a4";
+                const blankSvgWithColor = defaultIconSvg.replace(
+                  'fill="var(--md-sys-color-primary)"',
+                  `fill="${favColor}"`,
+                );
+                faviconEl.href =
+                  "data:image/svg+xml;base64," + btoa(blankSvgWithColor);
+                faviconEl.type = "image/svg+xml";
+              } else {
+                iconWrapper.innerHTML = `<img src="${metaObj.icon}" alt="logo">`;
+
+                // Set Favicon to the external URL
+                faviconEl.href = metaObj.icon;
+                faviconEl.type = "image/png"; // Assume standard image type for external URL
+              }
+            }
+
+            // Banner Feature
+            if (metaObj.banner) {
+              bannerEl.style.backgroundImage = `url(${metaObj.banner})`;
+              bannerEl.style.display = "block";
+            }
+
+            // Config: Primary Color Override
+            if (metaObj.color) {
+              document.documentElement.style.setProperty(
+                "--md-sys-color-primary",
+                metaObj.color,
+              );
+              // The favicon using BLANK_SVG will have already used this color above.
+            }
+
+            content = content.replace(match[0], "");
+          } else {
+            // If metadata block is present but lacks a title, show warning
+            document.getElementById("warning-modal").style.display = "flex";
+          }
+        } else {
+          // If no metadata block is found, show warning
+          document.getElementById("warning-modal").style.display = "flex";
+        }
+
+        // ********** CODE MOVED INSIDE THE FUNCTION **********
+
+        // Calculate and display Read Time
+        const readTime = calculateReadTime(content);
+        document.getElementById("read-time-display").innerHTML = `
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" width="14" height="14" style="margin-top:-1px"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+        ${readTime}
+    `;
+
+        const renderer = new marked.Renderer();
+
+        // Custom List Item for Tasks
+        renderer.listitem = (text, task, checked) => {
+          if (task) {
+            const cleanText = text.replace(/^<input[^>]+>\s*/, "");
+            return `<li style="list-style: none;"><div class="task-list-wrapper"><input type="checkbox" ${checked ? "checked" : ""} disabled onclick="return false;"><span>${cleanText}</span></div></li>`;
+          }
+          return `<li>${text}</li>`;
+        };
+
+        renderer.heading = (text, level) => {
+          const slug = text.toLowerCase().replace(/[^\w]+/g, "-");
+          headings.push({ text: text.replace(/<[^>]*>/g, ""), level, slug });
+          return `<h${level} id="${slug}">${text}</h${level}>`;
+        };
+
+        renderer.code = (code, lang) => {
+          if (lang === "mermaid") return `<div class="mermaid">${code}</div>`;
+          const validLang = hljs.getLanguage(lang) ? lang : "plaintext";
+          const highlighted = hljs.highlight(code, {
+            language: validLang,
+          }).value;
+          return `<div class="code-container"><button class="copy-btn" onclick="copy(this)">Copy</button><pre><code class="language-${validLang}">${highlighted}</code></pre></div>`;
+        };
+
+        // GitHub Alerts
+        renderer.blockquote = (quote) => {
+          const q = quote.replace(/<p>|<\/p>/g, "");
+          if (q.includes("[!NOTE]"))
+            return `<div style="background:var(--md-sys-color-surface-container); border-left:4px solid var(--md-sys-color-primary); padding:16px; border-radius:12px; margin:20px 0;"><strong>ℹ️ Note</strong><br/>${q.replace("[!NOTE]", "")}</div>`;
+          if (q.includes("[!WARNING]"))
+            return `<div style="background:#fff8e1; color:#5c4208; border-left:4px solid #ffb300; padding:16px; border-radius:12px; margin:20px 0;"><strong>⚠️ Warning</strong><br/>${q.replace("[!WARNING]", "")}</div>`;
+          return `<blockquote>${quote}</blockquote>`;
+        };
+
+        marked.setOptions({ renderer, gfm: true });
+
+        try {
+          document.getElementById("markdown-render").innerHTML =
+            DOMPurify.sanitize(marked.parse(content));
+          mermaid.run();
+          generateTOC();
+          setupScrollSpy();
+        } catch (e) {
+          console.error(e);
+        }
+      } // <-- This is the only function closing brace
+
+      function generateTOC() {
+        let html = "";
+        headings.forEach((h) => {
+          if (h.level > 1 && h.level <= 6) {
+            html += `<li><a href="#${h.slug}" class="toc-depth-${h.level}">${h.text}</a></li>`;
+          }
+        });
+        document.getElementById("toc-list").innerHTML = html;
+      }
+
+      function setupScrollSpy() {
+        const observer = new IntersectionObserver(
+          (entries) => {
+            entries.forEach((entry) => {
+              if (entry.isIntersecting) {
+                document
+                  .querySelectorAll("#toc-list a")
+                  .forEach((a) => a.classList.remove("active"));
+                const active = document.querySelector(
+                  `#toc-list a[href="#${entry.target.id}"]`,
+                );
+                if (active) active.classList.add("active");
+              }
+            });
+          },
+          { rootMargin: "0px 0px -80% 0px", threshold: 0 },
+        );
+        document
+          .querySelectorAll("h1, h2, h3, h4, h5, h6")
+          .forEach((h) => observer.observe(h));
+      }
+
+      function toggleSidebar() {
+        const sb = document.getElementById("sidebar");
+        const overlay = document.querySelector(".overlay");
+
+        if (window.innerWidth > 800) {
+          sb.classList.toggle("collapsed");
+        } else {
+          sb.classList.toggle("open");
+          overlay.classList.toggle("open");
+        }
+      }
+
+      function toggleTheme() {
+        const curr = document.documentElement.getAttribute("data-theme");
+        const next = curr === "dark" ? "light" : "dark";
+        document.documentElement.setAttribute("data-theme", next);
+        localStorage.setItem("theme", next);
+        syncHljsTheme(next);
+      }
+
+      function copy(btn) {
+        const code = btn.nextElementSibling.querySelector("code").innerText;
+        navigator.clipboard.writeText(code);
+        btn.textContent = "Copied!";
+        setTimeout(() => (btn.textContent = "Copy"), 2000);
+      }
+    </script>
+  </body>
+</html>
