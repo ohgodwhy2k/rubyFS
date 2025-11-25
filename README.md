@@ -58,17 +58,17 @@ Use these commands to manage and prepare your extension for use.
 
 These packages provide the tooling necessary to build, format, and maintain your extension:
 
-* **Rollup**:
+- **Rollup**:
   `rollup`, `@rollup/plugin-commonjs`, `@rollup/plugin-node-resolve`
-  *(Module bundling and plugin support)*
+  _(Module bundling and plugin support)_
 
-* **ESLint**:
+- **ESLint**:
   `eslint`, `@eslint/js`, `eslint-plugin-jsdoc`, `globals`
-  *(Code quality and error checking)*
+  _(Code quality and error checking)_
 
-* **Prettier**:
+- **Prettier**:
   `prettier`, `eslint-config-prettier`
-  *(Code formatting and style consistency)*
+  _(Code formatting and style consistency)_
 
 # Keeping Up to Date
 

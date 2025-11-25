@@ -234,7 +234,7 @@
             opcode: "setLimit",
             blockType: Scratch.BlockType.COMMAND,
             text: Scratch.translate(
-              "set size limit for [DIR] to [BYTES] bytes"
+              "set size limit for [DIR] to [BYTES] bytes",
             ),
             arguments: {
               DIR: {
@@ -586,7 +586,7 @@
           const currentSize = this._getDirectorySize(currentDir);
           if (currentSize + deltaSize > limit) {
             this._setError(
-              `Size limit exceeded for ${currentDir}: ${currentSize} + ${deltaSize} > ${limit}`
+              `Size limit exceeded for ${currentDir}: ${currentSize} + ${deltaSize} > ${limit}`,
             );
             return false;
           }
@@ -629,7 +629,7 @@
       } else {
         this._warn(
           "InternalCreate: Parent not found, using default perms",
-          parentDir
+          parentDir,
         );
         permsToInherit = defaultPerms;
       }
@@ -711,17 +711,17 @@
 
       if (!this.hasPermission(path1, "delete")) {
         return this._setError(
-          `Rename failed: No 'delete' permission on ${path1}`
+          `Rename failed: No 'delete' permission on ${path1}`,
         );
       }
       if (this.fs.has(path2)) {
         return this._setError(
-          `Rename failed: Destination ${path2} already exists`
+          `Rename failed: Destination ${path2} already exists`,
         );
       }
       if (!this.hasPermission(path2, "create")) {
         return this._setError(
-          `Rename failed: No 'create' permission for ${path2}`
+          `Rename failed: No 'create' permission for ${path2}`,
         );
       }
 
@@ -801,12 +801,12 @@
       }
       if (this.fs.has(path2)) {
         return this._setError(
-          `Copy failed: Destination ${path2} already exists`
+          `Copy failed: Destination ${path2} already exists`,
         );
       }
       if (!this.hasPermission(path2, "create")) {
         return this._setError(
-          `Copy failed: No 'create' permission for ${path2}`
+          `Copy failed: No 'create' permission for ${path2}`,
         );
       }
 
@@ -871,7 +871,7 @@
           permsToInherit = this.fs.get("/").perms;
         } else {
           this._log(
-            `Copy: Could not find parent "${destParentDir}", using default perms.`
+            `Copy: Could not find parent "${destParentDir}", using default perms.`,
           );
         }
 
@@ -895,7 +895,7 @@
 
       if (path === "/") {
         return this._setError(
-          "Create failed: Cannot create root directory '/'"
+          "Create failed: Cannot create root directory '/'",
         );
       }
 
@@ -909,7 +909,7 @@
 
         if (!this.hasPermission(parentDir, "create")) {
           return this._setError(
-            `Create failed: No 'create' permission in ${this._internalDirName(parentDir)}, aborting recursive create.`
+            `Create failed: No 'create' permission in ${this._internalDirName(parentDir)}, aborting recursive create.`,
           );
         }
 
@@ -919,14 +919,14 @@
 
         if (this.lastError) {
           this._log(
-            "Create failed: Parent creation failed (recursive call failed)."
+            "Create failed: Parent creation failed (recursive call failed).",
           );
 
           return;
         }
         if (!this.fs.has(parentDir)) {
           return this._setError(
-            "Create failed: Parent creation failed, aborting."
+            "Create failed: Parent creation failed, aborting.",
           );
         }
       }
@@ -934,7 +934,7 @@
       const ok = this._internalCreate(
         path,
         this._isPathDir(path) ? null : "",
-        parentDir
+        parentDir,
       );
 
       if (!ok) {
@@ -942,7 +942,7 @@
 
         if (!this.lastError) {
           this._setError(
-            `Create failed: An internal error occurred for ${path}`
+            `Create failed: An internal error occurred for ${path}`,
           );
         }
         return;
@@ -983,7 +983,7 @@
 
       if (!this.hasPermission(path, "delete")) {
         return this._setError(
-          `Delete failed: No 'delete' permission on ${path}`
+          `Delete failed: No 'delete' permission on ${path}`,
         );
       }
 
@@ -1131,7 +1131,7 @@
         const version = data ? data.version : null;
         if (!version) {
           return this._setError(
-            "Import failed: Data invalid or missing version."
+            "Import failed: Data invalid or missing version.",
           );
         }
 
@@ -1144,7 +1144,7 @@
             Array.isArray(data.fs)
           ) {
             return this._setError(
-              "Import failed: v1.0.5 data is corrupt (missing 'fs' object)."
+              "Import failed: v1.0.5 data is corrupt (missing 'fs' object).",
             );
           }
         } else if (
@@ -1169,7 +1169,7 @@
             data.sy.indexOf("/") === -1
           ) {
             return this._setError(
-              "Import failed: Old version data arrays are corrupt or mismatched."
+              "Import failed: Old version data arrays are corrupt or mismatched.",
             );
           }
 
@@ -1179,7 +1179,7 @@
           data.accessed = new Array(data.sy.length).fill(now);
         } else {
           return this._setError(
-            `Import failed: Incompatible version "${version}". Expected "${extensionVersion}" or older.`
+            `Import failed: Incompatible version "${version}". Expected "${extensionVersion}" or older.`,
           );
         }
 
@@ -1203,7 +1203,7 @@
               typeof perm.control !== "boolean"
             ) {
               this._setError(
-                "Import failed: Corrupt data found in legacy filesystem entries."
+                "Import failed: Corrupt data found in legacy filesystem entries.",
               );
               this._internalClean();
               return;
@@ -1232,7 +1232,7 @@
                 typeof entry.accessed !== "number"
               ) {
                 this._setError(
-                  `Import failed: Corrupt entry for path "${path}".`
+                  `Import failed: Corrupt entry for path "${path}".`,
                 );
                 this._internalClean();
                 return;
@@ -1242,7 +1242,7 @@
           }
           if (!this.fs.has("/")) {
             this._setError(
-              "Import failed: Rebuilt filesystem is missing root '/'."
+              "Import failed: Rebuilt filesystem is missing root '/'.",
             );
             this._internalClean();
             return;
@@ -1251,9 +1251,10 @@
 
         this.writeActivity = true;
         this._log("Import successful");
-      } catch { // **FIXED (Line 1252)**: removed unused variable 'e'
+      } catch {
+        // **FIXED (Line 1252)**: removed unused variable 'e'
         this._setError(
-          `Import failed: JSON parse error. File system was not changed.`
+          `Import failed: JSON parse error. File system was not changed.`,
         );
       }
     }
@@ -1343,7 +1344,7 @@
 
       if (!this.hasPermission(path, "control")) {
         return this._setError(
-          `setPerm failed: No 'control' permission on ${path}`
+          `setPerm failed: No 'control' permission on ${path}`,
         );
       }
 
@@ -1459,7 +1460,7 @@
 
       if (!this.hasPermission(path, "control")) {
         return this._setError(
-          `setLimit failed: No 'control' permission on ${path}`
+          `setLimit failed: No 'control' permission on ${path}`,
         );
       }
       const entry = this.fs.get(path);
@@ -1473,7 +1474,7 @@
         const currentSize = this._getDirectorySize(path);
         if (currentSize > limitInBytes) {
           return this._setError(
-            `setLimit failed: New limit (${limitInBytes} B) is smaller than current directory size (${currentSize} B)`
+            `setLimit failed: New limit (${limitInBytes} B) is smaller than current directory size (${currentSize} B)`,
           );
         }
       }
@@ -1498,13 +1499,13 @@
 
       if (!this.hasPermission(path, "control")) {
         return this._setError(
-          `removeLimit failed: No 'control' permission on ${path}`
+          `removeLimit failed: No 'control' permission on ${path}`,
         );
       }
       const entry = this.fs.get(path);
       if (!entry) {
         return this._setError(
-          `removeLimit failed: Directory ${path} not found`
+          `removeLimit failed: Directory ${path} not found`,
         );
       }
 
