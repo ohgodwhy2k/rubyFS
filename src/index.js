@@ -5,6 +5,8 @@
 // Original: 0832 <https://scratch.mit.edu/users/0832/>
 // License: MIT
 
+// Maybe the linting fix I hope
+
 (function (Scratch) {
   "use strict";
 
@@ -512,7 +514,7 @@
         return "/";
       }
 
-      let procPath = this._isPathDir(path)
+      const procPath = this._isPathDir(path) // **FIXED (Line 515)**: changed 'let' to 'const'
         ? path.substring(0, path.length - 1)
         : path;
 
@@ -1078,15 +1080,15 @@
 
       entry.accessed = Date.now();
 
-      let children = new Set();
+      const children = new Set(); // **FIXED (Line 1081)**: changed 'let' to 'const'
       const pathLen = path.length;
 
       for (const itemPath of this.fs.keys()) {
         if (itemPath === path || itemPath === "/") continue;
 
         if (itemPath.startsWith(path)) {
-          let remainder = itemPath.substring(pathLen);
-          let nextSlash = remainder.indexOf("/");
+          const remainder = itemPath.substring(pathLen); // **FIXED (Line 1088)**: changed 'let' to 'const'
+          const nextSlash = remainder.indexOf("/"); // **FIXED (Line 1089)**: changed 'let' to 'const'
           let childName = "";
           let isDir = false;
 
@@ -1249,7 +1251,7 @@
 
         this.writeActivity = true;
         this._log("Import successful");
-      } catch (e) {
+      } catch { // **FIXED (Line 1252)**: removed unused variable 'e'
         this._setError(
           `Import failed: JSON parse error. File system was not changed.`
         );
@@ -1408,7 +1410,7 @@
         return "/";
       }
 
-      let procPath = this._isPathDir(path)
+      const procPath = this._isPathDir(path) // **FIXED (Line 1411)**: changed 'let' to 'const'
         ? path.substring(0, path.length - 1)
         : path;
 
@@ -1620,5 +1622,5 @@
     }
   }
 
-  Scratch.extensions.register(/** @type {any} */ (new RubyFS()));
+  Scratch.extensions.register(/** @type {RubyFS} */ (new RubyFS())); // **FIXED (Line 1623)**: changed '{any}' to '{RubyFS}'
 })(Scratch);
